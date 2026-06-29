@@ -12,6 +12,29 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 var app = builder.Build();
 
+// Apply pending EF Core migrations on startup, retrying while the database comes up.
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    const int maxAttempts = 10;
+    for (var attempt = 1; ; attempt++)
+    {
+        try
+        {
+            db.Database.Migrate();
+            break;
+        }
+        catch (Exception ex) when (attempt < maxAttempts)
+        {
+            var delay = TimeSpan.FromSeconds(Math.Min(attempt * 2, 30));
+            logger.LogWarning(ex, "Migration attempt {Attempt}/{MaxAttempts} failed; retrying in {Delay}s.", attempt, maxAttempts, delay.TotalSeconds);
+            await Task.Delay(delay);
+        }
+    }
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
