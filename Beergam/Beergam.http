@@ -1,0 +1,6 @@
+@Beergam_HostAddress = http://localhost:5229
+
+GET {{Beergam_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
