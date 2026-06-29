@@ -4,11 +4,9 @@ services:
       target: dev               # build the dev stage instead of final
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS: http://+:5000
       DOTNET_USE_POLLING_FILE_WATCHER: "true"   # needed for mounted volumes
     volumes:
       - ../Beergam:/src/Beergam               # mount your source into the container
       - /src/Beergam/bin                       # anonymous volumes so host bin/obj…
       - /src/Beergam/obj                       # …don't clobber the container's
-    ports:
-      - "5000:5000"
+    # Port mapping (incl. ${API_PORT}) is inherited from compose.yaml.

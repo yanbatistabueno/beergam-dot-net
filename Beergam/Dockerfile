@@ -1,8 +1,8 @@
 ﻿FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 USER $APP_UID
 WORKDIR /app
-EXPOSE 5000
-EXPOSE 5001
+EXPOSE 8000
+EXPOSE 8001
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
@@ -27,4 +27,4 @@ WORKDIR /src/Beergam
 # Install the EF Core CLI matching Pomelo 9.0.0 (EF Core 9) and add it to PATH
 RUN dotnet tool install --global dotnet-ef --version 9.*
 ENV PATH="$PATH:/root/.dotnet/tools"
-ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile", "--urls", "http://+:5000"]
+ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile", "--urls", "http://+:8000"]

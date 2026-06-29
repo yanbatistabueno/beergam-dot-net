@@ -6,11 +6,13 @@
       dockerfile: Beergam/Dockerfile
     restart: unless-stopped
     ports:
-      - "5000:5000"
-      - "5001:5001"
+      # ${API_PORT on the host} -> 8000 inside the container (the port the app listens on)
+      - "${API_PORT:-5000}:8000"
     environment:
-      # This becomes ConnectionStrings:Database in ASP.NET config
-      ConnectionStrings__Database: "Server=${DB_HOST};Port=3306;Database=beergam;User=${DB_USER};Password=${DB_PASSWORD};"
+      # This becomes ConnectionStrings:Database in ASP.NET config.
+      # Port=3306 is the DB container's *internal* port (over the compose network),
+      # which is independent of DB_PORT (the host-side mapping below).
+      ConnectionStrings__Database: "Server=${DB_HOST:-db};Port=3306;Database=beergam;User=${DB_USER};Password=${DB_PASSWORD};"
     depends_on:
       - db
 
@@ -19,7 +21,8 @@
     container_name: mysql
     restart: unless-stopped
     ports:
-      - "3307:3306"
+      # ${DB_PORT on the host} -> 3306 inside the container (MySQL's port)
+      - "${DB_PORT:-3306}:3306"
     environment:
       MYSQL_DATABASE: beergam
       MYSQL_USER: ${DB_USER}
