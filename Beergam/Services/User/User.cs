@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-
-namespace Beergam.Models;
+using Beergam.Models;
+namespace Beergam.Services.User;
 
 public enum UserRole
 {

@@ -1,12 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 
 namespace Beergam.Services.Auth;
-
+using Beergam.Services.Password;
 public class AuthController : Controller
 {
-    // GET
-    public IActionResult Index()
+    private readonly IPasswordService _passwordService;
+    public AuthController(IPasswordService passwordService)
     {
-        return View();
+        _passwordService = passwordService;
     }
+    
+    
+    
 }

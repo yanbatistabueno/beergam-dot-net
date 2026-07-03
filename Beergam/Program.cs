@@ -1,6 +1,6 @@
 using Beergam.Data;
 using Microsoft.EntityFrameworkCore;
-
+using Beergam.Api;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -40,7 +40,7 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
