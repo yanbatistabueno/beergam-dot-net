@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Beergam.Data;
 using Models;
+using Services.User;
 
 public class AppDbContext : DbContext
 {
