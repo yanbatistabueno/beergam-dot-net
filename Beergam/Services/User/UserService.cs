@@ -7,14 +7,16 @@ using Microsoft.EntityFrameworkCore;
 public class UserService : IUserService
 {
     private readonly AppDbContext _dbContext;
+    private readonly IPasswordService _passwordService;
 
-    public UserService(AppDbContext dbContext)
+    public UserService(AppDbContext dbContext, IPasswordService passwordService)
     {
         _dbContext = dbContext;
+        _passwordService = passwordService;
     }
     public async Task<bool> VerifyEmailExists(string email)
     {
-        var loweredEmail = email.Trim().ToLower();
+        String loweredEmail = email.Trim().ToLower();
         return await _dbContext.Users.AnyAsync(u => u.Email.ToLower() == loweredEmail);
     }
     public async Task<UserDTO.UserDto> CreateUser(User user)
@@ -24,4 +26,28 @@ public class UserService : IUserService
         return new UserDTO.UserDto(user.Name, user.Pin, user.Email);
     }
 
+    public async Task<UserDTO.UserDto> GetUserByEmail(string email)
+    {
+        String loweredEmail = email.Trim().ToLower();
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == loweredEmail);
+        if (user is null)
+        {
+            throw new Exception("Usuário não encontrado.");
+        }
+        return new UserDTO.UserDto(user.Name, user.Pin, user.Email);
+    }
+    public async Task<bool> VerifyPassword(string email, string password)
+    {
+        String loweredEmail = email.Trim().ToLower();
+
+        var hashedPassword = await _dbContext.Users
+            .AsNoTracking()
+            .Where(u => u.Email.ToLower() == loweredEmail)
+            .Select(u => u.Password)
+            .FirstOrDefaultAsync();
+        if (hashedPassword is null)
+            return false;
+
+        return _passwordService.VerifyHashedPassword(hashedPassword, password);
+    }
 }

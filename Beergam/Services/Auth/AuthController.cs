@@ -16,14 +16,18 @@ public class AuthController : ApiController
     }
 
     [HttpPost("/login")]
-    public IActionResult Login([FromBody] AuthDTO.LoginRequestDto request)
+    public async Task<IActionResult> Login([FromBody] AuthDTO.LoginRequestDto request)
     {
-        if (request.Email == "user@example.com" && _passwordService.VerifyHashedPassword("hashed_password", request.Password))
+        try
         {
-            var token = "your_generated_jwt_token";
-            return Ok(new { Token = token });
+            var user = await _authService.Login(request);
+            var response = new AuthDTO.LoginResponseDto(user, "1234");
+            return Ok(response);
         }
-        return Unauthorized("Credenciais inválidas.");
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
     }
 
     [HttpPost("/register")]

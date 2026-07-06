@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Identity.Data;
+
 namespace Beergam.Services.Auth;
 using Beergam.Services.User;
 using Beergam.Services.Password;
@@ -10,6 +12,19 @@ public class AuthService : IAuthService
     {
         _userService = userService;
         _passwordService = passwordService;
+    }
+
+    public async Task<UserDTO.UserDto?> Login(AuthDTO.LoginRequestDto request)
+    {
+        if (!await _userService.VerifyEmailExists(request.Email))
+        {
+            throw new Exception("Email não encontrado.");
+        }
+        if (!await _userService.VerifyPassword(request.Email, request.Password))
+        {
+            throw new Exception("Credenciais incorretas.");
+        }
+        return await _userService.GetUserByEmail(request.Email);
     }
 
     public async Task<UserDTO.UserDto> Register(AuthDTO.RegisterRequestDto request)
