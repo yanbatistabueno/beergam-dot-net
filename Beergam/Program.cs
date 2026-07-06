@@ -4,8 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Beergam.Api;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Beergam.Services.Auth;
 using Beergam.Services.Password;
 using Beergam.Services.User;
+using Beergam.Services.Auth;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -17,6 +19,7 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters

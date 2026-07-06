@@ -8,11 +8,11 @@ namespace Beergam.Services.Auth;
 public class AuthController : ApiController
 {
     private readonly IPasswordService _passwordService;
-    private readonly IUserService _userService;
-    public AuthController(IPasswordService passwordService, IUserService userService)
+    private readonly IAuthService _authService;
+    public AuthController(IPasswordService passwordService, IAuthService authService)
     {
         _passwordService = passwordService;
-        _userService = userService;
+        _authService = authService;
     }
 
     [HttpPost("/login")]
@@ -27,15 +27,13 @@ public class AuthController : ApiController
     }
 
     [HttpPost("/register")]
-    public IActionResult Register([FromBody] AuthDTO.RegisterRequestDto request)
+    public async Task<IActionResult> Register([FromBody] AuthDTO.RegisterRequestDto request)
     {
-        // var hashedPassword = _passwordService.HashPassword(request.Password);
-        //
         try
         {
-            //Adicionar depois lol :D
-            // _userService.RegisterUserAsync(user).Wait();
-            return Ok("Usuário registrado com sucesso.");
+            var user = await _authService.Register(request);
+            var response = new AuthDTO.RegisterResponseDto(user, "1234");
+            return Ok(response);
         }
         catch (Exception e)
         {
