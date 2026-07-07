@@ -7,14 +7,16 @@ public class AuthService : IAuthService
 {
     private readonly IUserService _userService;
     private readonly IPasswordService _passwordService;
+    private readonly IJwtService _jwtService;
 
-    public AuthService(IUserService userService, IPasswordService passwordService)
+    public AuthService(IUserService userService, IPasswordService passwordService, IJwtService jwtService)
     {
         _userService = userService;
         _passwordService = passwordService;
+        _jwtService = jwtService;
     }
 
-    public async Task<UserDTO.UserDto?> Login(AuthDTO.LoginRequestDto request)
+    public async Task<AuthDTO.LoginResponseDto> Login(AuthDTO.LoginRequestDto request)
     {
         if (!await _userService.VerifyEmailExists(request.Email))
         {
@@ -24,7 +26,9 @@ public class AuthService : IAuthService
         {
             throw new Exception("Credenciais incorretas.");
         }
-        return await _userService.GetUserByEmail(request.Email);
+        var user = await _userService.GetUserByEmail(request.Email);
+        var token = _jwtService.GenerateToken(user);
+        return new AuthDTO.LoginResponseDto(user, token);
     }
 
     public async Task<UserDTO.UserDto> Register(AuthDTO.RegisterRequestDto request)

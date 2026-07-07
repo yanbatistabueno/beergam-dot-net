@@ -20,8 +20,7 @@ public class AuthController : ApiController
     {
         try
         {
-            var user = await _authService.Login(request);
-            var response = new AuthDTO.LoginResponseDto(user, "1234");
+            var response = await _authService.Login(request);
             return Ok(response);
         }
         catch (Exception e)
