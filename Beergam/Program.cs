@@ -1,6 +1,13 @@
 using Beergam.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Beergam.Api;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Beergam.Services.Auth;
+using Beergam.Services.Password;
+using Beergam.Services.User;
+using Beergam.Services.Auth;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -10,6 +17,11 @@ var connectionString = builder.Configuration.GetConnectionString("Database");
 builder.Services.AddDbContext<AppDbContext>(options => options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 0))));
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddScoped<IPasswordService, PasswordService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddJwtAuthentication(builder.Configuration);
+builder.Services.AddScoped<IJwtService, JwtService>();
 var app = builder.Build();
 
 // Apply pending EF Core migrations on startup, retrying while the database comes up.
@@ -42,7 +54,7 @@ if (app.Environment.IsDevelopment())
 }
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

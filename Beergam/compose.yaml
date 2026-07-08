@@ -13,6 +13,9 @@
       # Port=3306 is the DB container's *internal* port (over the compose network),
       # which is independent of DB_PORT (the host-side mapping below).
       ConnectionStrings__Database: "Server=${DB_HOST:-db};Port=3306;Database=beergam;User=${DB_USER};Password=${DB_PASSWORD};"
+      Jwt__Issuer: "${JWT_ISSUER:-beergam-api}"
+      Jwt__Audience: "${JWT_AUDIENCE:-beergam-api}"
+      Jwt__SecretKey: "${JWT_SECRET_KEY}"
     depends_on:
       - db
 
