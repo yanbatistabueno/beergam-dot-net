@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Beergam.Models;
+using Microsoft.EntityFrameworkCore;
 namespace Beergam.Services.User;
 
 public enum UserRole
@@ -8,13 +9,17 @@ public enum UserRole
     Colab,
 }
 
+[Index(nameof(Email), IsUnique = true)]
+[Index(nameof(Pin), IsUnique = true)]
 public class User : BaseModel
 {
     [StringLength(255)]
     public required string Name { get; set; }
-    [StringLength(255)]
+    
+    [StringLength(9)]
     public required string Pin { get; set; }
-    [StringLength(255)]
+    
+    [StringLength(9)]
     public string? MasterPin { get; set; }
     [StringLength(255)]
     public required string Password { get; set; }

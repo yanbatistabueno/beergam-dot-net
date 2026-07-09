@@ -1,9 +1,10 @@
 using Beergam.Services.Auth;
-
+using System.Security.Cryptography;
 namespace Beergam.Services.User;
 using Beergam.Services.Password;
 using Beergam.Data;
 using Microsoft.EntityFrameworkCore;
+
 public class UserService : IUserService
 {
     private readonly AppDbContext _dbContext;
@@ -14,6 +15,37 @@ public class UserService : IUserService
         _dbContext = dbContext;
         _passwordService = passwordService;
     }
+
+    private string GenerateRandomPin()
+    {
+        const string Symbols = "!@#$%^&*()-_=+[]{};:,.?";
+        char[] Chars =
+        (
+            new string(Enumerable.Range('A', 26).Select(c => (char)c).ToArray()) +   // A–Z
+            new string(Enumerable.Range('a', 26).Select(c => (char)c).ToArray()) +   // a–z
+            "0123456789" +
+            Symbols
+        ).ToCharArray();
+        char[] result = new char[6];
+        for (int i = 0; i < 6; i++)
+        {
+            // Use RandomNumberGenerator for true cryptographic randomness
+            result[i] = Chars[RandomNumberGenerator.GetInt32(Chars.Length)];
+        }
+        return "BG_" + new string(result);
+    }
+
+    public string GenerateUserPin()
+    {
+        string pin;
+        do
+        {
+            pin = GenerateRandomPin();
+        }
+        while (_dbContext.Users.Any(u => u.Pin == pin));
+        return pin;
+    }
+
     public async Task<bool> VerifyEmailExists(string email)
     {
         String loweredEmail = email.Trim().ToLower();
