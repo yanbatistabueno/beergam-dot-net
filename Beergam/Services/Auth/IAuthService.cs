@@ -3,5 +3,5 @@ using Beergam.Services.User;
 public interface IAuthService
 {
     Task<AuthDTO.LoginResponseDto> Login(AuthDTO.LoginRequestDto request);
-    Task<UserDTO.UserDto> Register(AuthDTO.RegisterRequestDto request);
+    Task<AuthDTO.RegisterResponseDto> Register(AuthDTO.RegisterRequestDto request);
 }

@@ -31,7 +31,7 @@ public class AuthService : IAuthService
         return new AuthDTO.LoginResponseDto(user, token);
     }
 
-    public async Task<UserDTO.UserDto> Register(AuthDTO.RegisterRequestDto request)
+    public async Task<AuthDTO.RegisterResponseDto> Register(AuthDTO.RegisterRequestDto request)
     {
         try
         {
@@ -46,12 +46,12 @@ public class AuthService : IAuthService
                 Email = request.Email,
                 Password = _passwordService.HashPassword(request.Password),
                 IsActive = true,
-                Pin = "12345",
-                MasterPin = "12345",
+                Pin = _userService.GenerateUserPin(),
                 Role = UserRole.Master
             };
-            UserDTO.UserDto user = await _userService.CreateUser(createdUser); 
-            return user;
+            var user = await _userService.CreateUser(createdUser); 
+            var token =  _jwtService.GenerateToken(user);
+            return new AuthDTO.RegisterResponseDto(user, token);
         }
         catch (Exception e)
         {

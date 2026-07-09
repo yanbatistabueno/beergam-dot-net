@@ -7,11 +7,9 @@ namespace Beergam.Services.Auth;
 
 public class AuthController : ApiController
 {
-    private readonly IPasswordService _passwordService;
     private readonly IAuthService _authService;
     public AuthController(IPasswordService passwordService, IAuthService authService)
     {
-        _passwordService = passwordService;
         _authService = authService;
     }
 
@@ -34,8 +32,7 @@ public class AuthController : ApiController
     {
         try
         {
-            var user = await _authService.Register(request);
-            var response = new AuthDTO.RegisterResponseDto(user, "1234");
+            var response = await _authService.Register(request);
             return Ok(response);
         }
         catch (Exception e)
