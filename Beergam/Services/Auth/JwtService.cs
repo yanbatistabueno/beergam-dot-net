@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
@@ -15,6 +16,11 @@ public class JwtService : IJwtService
         _settings = settings.Value;
     }
 
+    public string GenerateRefreshToken()
+    {
+        var bytes = RandomNumberGenerator.GetBytes(64);
+        return Convert.ToBase64String(bytes);
+    }
     public string GenerateToken(UserDTO.UserDto user)
     {
         var claims = new List<Claim>

@@ -5,4 +5,5 @@ namespace Beergam.Services.Auth;
 public interface IJwtService
 {
     string GenerateToken(UserDTO.UserDto user);
+    string GenerateRefreshToken();
 }

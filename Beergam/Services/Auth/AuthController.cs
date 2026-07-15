@@ -8,9 +8,11 @@ namespace Beergam.Services.Auth;
 public class AuthController : ApiController
 {
     private readonly IAuthService _authService;
-    public AuthController(IAuthService authService)
+    private readonly ICookies _cookies;
+    public AuthController(IAuthService authService,  ICookies cookies)
     {
         _authService = authService;
+        _cookies = cookies;
     }
     [AllowAnonymous]
     [HttpPost("/login")]
@@ -18,8 +20,10 @@ public class AuthController : ApiController
     {
         try
         {
-            var response = await _authService.Login(request);
-            SetTokenCokkie(response.Token);
+            var (user, token, refreshToken) = await _authService.Login(request);
+            SetTokenCookie(token);
+            SetRefreshTokenCookie(refreshToken);
+            var response = new AuthDTO.LoginResponseDto(user);
             return Ok(response);
         }
         catch (Exception e)
@@ -33,8 +37,10 @@ public class AuthController : ApiController
     {
         try
         {
-            var response = await _authService.Register(request);
-            SetTokenCokkie(response.Token);
+            var (user, token, refreshToken) = await _authService.Register(request);
+            SetTokenCookie(token);
+            SetRefreshTokenCookie(refreshToken);
+            var response = new AuthDTO.RegisterResponseDto(user);
             return Ok(response);
         }
         catch (Exception e)
@@ -44,15 +50,13 @@ public class AuthController : ApiController
         
     }
 
-    private void SetTokenCokkie(string token)
+    private void SetTokenCookie(string token)
     {
-        Response.Cookies.Append("access_token", token, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = false,
-            SameSite = SameSiteMode.Strict,
-            Expires = DateTimeOffset.UtcNow.AddMinutes(15)
-            
-        });
+        Response.Cookies.Append("access_token", token, _cookies.GetTokenCookieOptions());
+    }
+
+    private void SetRefreshTokenCookie(string refreshToken)
+    {
+        Response.Cookies.Append("refresh_token", refreshToken, _cookies.GetRefreshTokenCookieOptions());
     }
 }

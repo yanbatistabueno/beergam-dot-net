@@ -18,11 +18,11 @@ builder.Services.AddOpenApi();
 builder.Services.AddSingleton<ICacheService, CacheService>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ICookies, Cookies>();
+builder.Services.AddScoped<IAuthCache, AuthCache>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddScoped<IJwtService, JwtService>();
-var app = builder.Build();
-
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 {
     var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
@@ -33,6 +33,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     var configuration = ConfigurationOptions.Parse(redisConnectionString, true);
     return ConnectionMultiplexer.Connect(configuration);
 });
+var app = builder.Build();
 
 // Apply pending EF Core migrations on startup, retrying while the database comes up.
 using (var scope = app.Services.CreateScope())

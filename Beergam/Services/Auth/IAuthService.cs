@@ -2,6 +2,6 @@ namespace Beergam.Services.Auth;
 using Beergam.Services.User;
 public interface IAuthService
 {
-    Task<AuthDTO.LoginResponseDto> Login(AuthDTO.LoginRequestDto request);
-    Task<AuthDTO.RegisterResponseDto> Register(AuthDTO.RegisterRequestDto request);
+    Task<(UserDTO.UserDto user, string token, string refreshToken)> Login(AuthDTO.LoginRequestDto request);
+    Task<(UserDTO.UserDto user, string token, string refreshToken)> Register(AuthDTO.RegisterRequestDto request);
 }
