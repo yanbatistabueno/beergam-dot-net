@@ -16,8 +16,10 @@
       Jwt__Issuer: "${JWT_ISSUER:-beergam-api}"
       Jwt__Audience: "${JWT_AUDIENCE:-beergam-api}"
       Jwt__SecretKey: "${JWT_SECRET_KEY}"
+      ConnectionStrings__Redis: "${REDIS_HOST:-redis-master}:6379,password=${REDIS_PASSWORD},abortConnect=false"
     depends_on:
       - db
+      - redis
 
   db:
     image: mysql:8.0
@@ -33,6 +35,15 @@
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     volumes:
       - mysql-data:/var/lib/mysql
-
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+        - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    command: ["redis-server", "--appendonly", "yes"]
 volumes:
   mysql-data:
+  redis-data:

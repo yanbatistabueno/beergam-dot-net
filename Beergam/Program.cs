@@ -1,13 +1,11 @@
 using Beergam.Data;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Beergam.Api;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Beergam.Services.Auth;
 using Beergam.Services.Password;
 using Beergam.Services.User;
-using Beergam.Services.Auth;
+using StackExchange.Redis;
+using Beergam.Services.Cache;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -17,12 +15,24 @@ var connectionString = builder.Configuration.GetConnectionString("Database");
 builder.Services.AddDbContext<AppDbContext>(options => options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 0))));
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddSingleton<ICacheService, CacheService>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddScoped<IJwtService, JwtService>();
 var app = builder.Build();
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
+    if (string.IsNullOrEmpty(redisConnectionString))
+    {
+        throw new InvalidOperationException("Redis connection string is not configured.");
+    }
+    var configuration = ConfigurationOptions.Parse(redisConnectionString, true);
+    return ConnectionMultiplexer.Connect(configuration);
+});
 
 // Apply pending EF Core migrations on startup, retrying while the database comes up.
 using (var scope = app.Services.CreateScope())
