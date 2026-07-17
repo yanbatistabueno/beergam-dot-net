@@ -1,3 +1,13 @@
 namespace Beergam.Services.Auth;
 
-public record RevocationInfo();
+public enum RevocationReason
+{
+    Login,
+    Logout
+}
+
+public record RevocationInfo(
+    string RevokedToken,
+    RevocationReason reason,
+    DateTime RevokedAt,
+    string Ip);

@@ -68,6 +68,17 @@ public class UserService : IUserService
         }
         return new UserDTO.UserDto(user.Name, user.Pin, user.Email);
     }
+    
+    public async Task<UserDTO.UserDto> GetUserByPin(string pin)
+    {
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Pin == pin);
+        if (user is null)
+        {
+            throw new Exception("Usuário não encontrado.");
+        }
+        return new UserDTO.UserDto(user.Name, user.Pin, user.Email);
+    }
+    
     public async Task<bool> VerifyPassword(string email, string password)
     {
         String loweredEmail = email.Trim().ToLower();

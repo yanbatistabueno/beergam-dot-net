@@ -1,8 +1,9 @@
 using System.Text;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
-
+using System.IdentityModel.Tokens.Jwt;
 namespace Beergam.Services.Auth;
 
 public static class AuthenticationExtensions
@@ -23,18 +24,36 @@ public static class AuthenticationExtensions
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
-                    ValidateLifetime = true,
+                    ValidateLifetime = false,
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = jwtSettings.Issuer,
                     ValidAudience = jwtSettings.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
                 };
+                options.MapInboundClaims = false;
                 options.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = context =>
                     {
                         context.Token = context.Request.Cookies["access_token"];
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        var authCacheService = context.HttpContext.RequestServices.GetRequiredService<IAuthCache>();
+                        var pin = context.Principal?.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+                        var jti   = context.Principal?.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+
+                        if (pin == null || jti == null)
+                        {
+                            context.Fail("Token inválido.");
+                        }
+                        var currentJti = authCacheService.GetCacheUserCurrentJti(pin).Result;
+                        if (currentJti == null || currentJti != jti)
+                        {
+                            context.Fail("Token expirado ou revogado.");
+                        }
                         return Task.CompletedTask;
                     }
                 };

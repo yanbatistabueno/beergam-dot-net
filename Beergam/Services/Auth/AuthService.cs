@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.Extensions.Options;
-
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 namespace Beergam.Services.Auth;
 using Beergam.Services.User;
 using Beergam.Services.Password;
@@ -20,6 +21,34 @@ public class AuthService : IAuthService
         _settings = settings.Value;
         _authCache = authCache;
     }
+
+    private async Task<(string token, string refreshToken)> IssueTokens(UserDTO.UserDto user)
+    {
+        var (token, jti) = _jwtService.GenerateToken(user);
+        var refreshToken = _jwtService.GenerateRefreshToken();
+        var ttl = await _authCache.GetTokenExpiration(user.Pin) ?? TimeSpan.FromDays(_settings.RefreshTokenExpirationDays);
+        await _authCache.SetCacheUserRefreshToken(user.Pin, refreshToken, ttl);
+        await _authCache.SetCacheUserCurrentJti(user.Pin, jti, TimeSpan.FromMinutes(_settings.ExpirationMinutes));
+        return (token, refreshToken);
+    }
+
+    public async Task<(string token, string refreshToken)> RefreshToken(string accessToken, string refreshToken)
+    {
+        var principal = _jwtService.GetPrincipalFromExpiredToken(accessToken);
+        var pin = principal?.FindFirstValue(JwtRegisteredClaimNames.Sub);
+        var revocation = await _authCache.GetRevocationToken(pin);
+        if (refreshToken == revocation?.RevokedToken)
+        {
+            throw new Exception("Refresh token invalid.");
+        }
+        var currentToken = await _authCache.GetCacheUserRefreshToken(pin);
+        if (refreshToken == currentToken)
+        {
+            return await IssueTokens(await _userService.GetUserByPin(pin)); 
+        }
+        throw new Exception("Refresh token invalid.");
+        
+    }
     
     public async Task<(UserDTO.UserDto user, string token, string refreshToken)> Login(AuthDTO.LoginRequestDto request)
     {
@@ -32,9 +61,13 @@ public class AuthService : IAuthService
             throw new Exception("Credenciais incorretas.");
         }
         var user = await _userService.GetUserByEmail(request.Email);
-        var token = _jwtService.GenerateToken(user);
-        var refreshToken = _jwtService.GenerateRefreshToken();
-        await _authCache.SetCacheUserRefreshToken(user.Pin, refreshToken, TimeSpan.FromDays(_settings.RefreshTokenExpirationDays));
+        var prev = await _authCache.GetCacheUserRefreshToken(user.Pin);
+        if (prev != null)
+        {
+            await _authCache.SetRevocationToken(user.Pin, prev, RevocationReason.Login, TimeSpan.FromDays(_settings.RefreshTokenExpirationDays));
+        }
+        
+        var (token, refreshToken) = await IssueTokens(user);
         return (user, token, refreshToken);
     }
 
@@ -57,9 +90,7 @@ public class AuthService : IAuthService
                 Role = UserRole.Master
             };
             var user = await _userService.CreateUser(createdUser); 
-            var token =  _jwtService.GenerateToken(user);
-            var refreshToken = _jwtService.GenerateRefreshToken();
-            await _authCache.SetCacheUserRefreshToken(user.Pin, refreshToken, TimeSpan.FromDays(_settings.RefreshTokenExpirationDays));
+            var (token, refreshToken) = await IssueTokens(user);
             return (user, token, refreshToken);
         }
         catch (Exception e)

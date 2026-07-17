@@ -7,4 +7,5 @@ public interface IUserService
     Task<UserDTO.UserDto> GetUserByEmail(string email);
     Task<bool> VerifyPassword(string email,string password);
     string GenerateUserPin();
+    Task<UserDTO.UserDto> GetUserByPin(string pin);
 }
