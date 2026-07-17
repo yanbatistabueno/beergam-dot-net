@@ -48,4 +48,18 @@ public class CacheService : ICacheService
             Console.WriteLine(ex);
         }
     }
+
+    public async Task<TimeSpan?> GetTtlAsync(string key)
+    {
+        try
+        {
+            var ttl = await _db.KeyTimeToLiveAsync(key);
+            return ttl;
+        }
+        catch (RedisException ex)
+        {
+            Console.WriteLine(ex);
+            return null;
+        }
+    }
 }
