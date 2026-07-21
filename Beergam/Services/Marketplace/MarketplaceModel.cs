@@ -12,7 +12,7 @@ public enum MarketplaceType
 }
 
 [PrimaryKey(nameof(ShopId))]
-public class Marketplace : BaseModel
+public class MarketplaceModel : BaseModel
 {
     [StringLength(100)]
     public required string ShopId { get; set; }
@@ -25,9 +25,9 @@ public class Marketplace : BaseModel
     public required MarketplaceType Type { get; set; }
     
     [StringLength(9)]
-    public string pin { get; set; }
+    public required string UserPin { get; set; }
     
-    [ForeignKey(nameof(pin))]
-    public User User { get; set; } = null!
+    [ForeignKey(nameof(UserPin))]
+    public required UserModel User { get; set; }
     
 }

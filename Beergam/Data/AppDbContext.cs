@@ -1,3 +1,4 @@
+using Beergam.Services.Marketplace;
 using Microsoft.EntityFrameworkCore;
 
 namespace Beergam.Data;
@@ -10,7 +11,8 @@ public class AppDbContext : DbContext
     {
     }
     
-    public DbSet<User> Users => Set<User>();
+    public DbSet<UserModel> Users => Set<UserModel>();
+    public DbSet<MarketplaceModel> Marketplaces => Set<MarketplaceModel>();
     // Auto-fill CreatedAt / UpdatedAt for any entity deriving from BaseModel.
     public override int SaveChanges()
     {
