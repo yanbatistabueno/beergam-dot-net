@@ -54,22 +54,17 @@ public class AuthController : ApiController
     [HttpPost("/refresh")]
     public async Task<IActionResult> RefreshTokens()
     {
-        var accessToken  = Request.Cookies["access_token"];
-        var refreshToken = Request.Cookies["refresh_token"];
-        return Ok($"access_token={accessToken}&refresh_token={refreshToken}");
-        if (string.IsNullOrEmpty(accessToken) || string.IsNullOrEmpty(refreshToken))
-            return Unauthorized("Se fodeu");
-
         try
         {
-            var (token, newRefreshToken) = await _authService.RefreshToken(accessToken, refreshToken);
-            SetTokenCookie(token);
+            var accessToken  = Request.Cookies["access_token"];
+            var refreshToken = Request.Cookies["refresh_token"];
+            var (newAccessToken, newRefreshToken) = await _authService.RefreshToken(accessToken, refreshToken);
+            SetTokenCookie(newAccessToken);
             SetRefreshTokenCookie(newRefreshToken);
-            return Ok();
-        }
-        catch (Exception e)
+            return Ok("Token atualizado com sucesso.");
+        } catch (Exception e)
         {
-            return Unauthorized(e.Message);
+            return BadRequest(e.Message);
         }
     }
     private void SetTokenCookie(string token)

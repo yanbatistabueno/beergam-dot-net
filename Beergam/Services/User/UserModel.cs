@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Beergam.Models;
 using Microsoft.EntityFrameworkCore;
+using Beergam.Services.Marketplace;
 namespace Beergam.Services.User;
 
 public enum UserRole
@@ -11,7 +12,8 @@ public enum UserRole
 
 [Index(nameof(Email), IsUnique = true)]
 [Index(nameof(Pin), IsUnique = true)]
-public class User : BaseModel
+[PrimaryKey(nameof(Pin))]
+public class UserModel : BaseModel
 {
     [StringLength(255)]
     public required string Name { get; set; }
@@ -27,4 +29,6 @@ public class User : BaseModel
     public required UserRole Role { get; set; }
     [StringLength(255)]
     public required string Email { get; set; }
+
+    public ICollection<MarketplaceModel> Marketplaces { get; set; } = new List<MarketplaceModel>();
 }

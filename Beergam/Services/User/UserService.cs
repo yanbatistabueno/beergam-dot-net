@@ -51,11 +51,11 @@ public class UserService : IUserService
         String loweredEmail = email.Trim().ToLower();
         return await _dbContext.Users.AnyAsync(u => u.Email.ToLower() == loweredEmail);
     }
-    public async Task<UserDTO.UserDto> CreateUser(User user)
+    public async Task<UserDTO.UserDto> CreateUser(UserModel userModel)
     {
-        _dbContext.Users.Add(user);
+        _dbContext.Users.Add(userModel);
         await _dbContext.SaveChangesAsync();
-        return new UserDTO.UserDto(user.Name, user.Pin, user.Email);
+        return new UserDTO.UserDto(userModel.Name, userModel.Pin, userModel.Email);
     }
 
     public async Task<UserDTO.UserDto> GetUserByEmail(string email)

@@ -80,7 +80,7 @@ public class AuthService : IAuthService
                 throw new Exception("Email já está em uso.");
             }
 
-            var createdUser = new User
+            var createdUser = new UserModel
             {
                 Name = request.Name,
                 Email = request.Email,
