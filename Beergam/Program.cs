@@ -6,6 +6,8 @@ using Beergam.Services.Password;
 using Beergam.Services.User;
 using StackExchange.Redis;
 using Beergam.Services.Cache;
+using Beergam.Services.External.Marketplaces.Meli;
+using Beergam.Services.Marketplace;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -23,6 +25,9 @@ builder.Services.AddScoped<IAuthCache, AuthCache>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.Configure<MeliSettings>(builder.Configuration.GetSection("Meli"));
+builder.Services.AddScoped<IMeliApiClient, MeliApiClient>();
+builder.Services.AddScoped<IMarketplaceService, MarketplaceService>();
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 {
     var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
